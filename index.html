@@ -9,7 +9,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         // ATUALIZADO: Inclui 'where' e outros comandos Firestore
-        import { getFirestore, onSnapshot, collection, query, where, doc, setDoc, updateDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, onSnapshot, collection, query, where, doc, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Configuration ---
         const firebaseConfig = {
@@ -35,7 +35,6 @@
             if (!user) {
                 await signInAnonymously(auth);
             }
-            // Chama o setup apenas para a galeria filtrada
             setupFilteredGalleryListener();
         });
 
@@ -96,7 +95,6 @@
                     photoCard.setAttribute('data-project-id', projeto.id);
                     photoCard.classList.add('bg-white', 'rounded-lg', 'shadow-xl', 'p-4', 'flex', 'flex-col', 'items-center', 'space-y-2', 'cursor-pointer', 'transform', 'hover:scale-[1.03]', 'transition-all');
                     
-                    // ESTE É O COMANDO QUE ABRE O MODAL AO CLICAR NO CARD
                     photoCard.onclick = (e) => window.showModalFromCard(e);
 
                     const previewImage = projeto.images && projeto.images.length > 0 ? projeto.images[0].url : 'https://placehold.co/600x400/0095f6/ffffff?text=Sem+Imagem';
@@ -118,11 +116,9 @@
 
         // --- LISTENERS FIREBASE ---
 
-        // Listener para a Galeria Filtrada (Arquitetônico e Interiores)
         const setupFilteredGalleryListener = () => {
             const projectsCollectionRef = collection(db, `artifacts/${firebaseConfig.projectId}/public/data/galleries`);
             
-            // Filtro corrigido
             const q = query(
                 projectsCollectionRef, 
                 where('tipoProjeto', 'in', [
@@ -135,7 +131,7 @@
 
             onSnapshot(q, (querySnapshot) => {
                 const filteredPhotos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderGallery(filteredPhotos, 'gallery-arq-int'); // Renderiza na div
+                renderGallery(filteredPhotos, 'gallery-arq-int'); 
             }, (error) => {
                 console.error("Erro no listener de snapshot da Galeria Filtrada:", error);
                 showMessage('Erro ao carregar projetos filtrados.', 'error');
@@ -148,14 +144,12 @@
             const modal = document.getElementById('modal');
             const projectDetailsDesktop = document.getElementById('project-details-desktop');
             const projectDetailsMobile = document.getElementById('project-details-mobile');
-            const projectTitle = document.getElementById('project-title');
+            // 'project-title' foi removido daqui para evitar o TypeError, o título agora é injetado no detailsHTML.
             
-            // PREPARAÇÃO DO CARROSSEL DE IMAGENS
             currentCarouselPhotos = projeto.images || [];
             currentImageIndex = 0;
             window.showCarousel();
-
-            projectTitle.textContent = projeto.nomeProjeto || 'Detalhes do Projeto';
+            // A linha projectTitle.textContent = ... foi removida daqui, resolvendo o TypeError.
 
             const rating = projeto.ratingCount > 0 ? projeto.totalRating / projeto.ratingCount : 0;
             const displayStars = generateDisplayStars(rating);
