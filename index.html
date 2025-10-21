@@ -39,7 +39,7 @@
             setupFilteredGalleryListener();
         });
 
-        // --- FUNÇÕES DE UI (Reduzidas para o essencial) ---
+        // --- FUNÇÕES DE UI ---
         
         const showMessage = (message, type = 'info') => { 
             const messageBox = document.getElementById('message-box');
@@ -76,7 +76,7 @@
         };
 
 
-        // REUTILIZÁVEL: Função renderGallery
+        // Função renderGallery
         const renderGallery = (photosToRender, containerId) => {
             const container = document.getElementById(containerId);
             if (!container) return; 
@@ -96,10 +96,10 @@
                     photoCard.setAttribute('data-project-id', projeto.id);
                     photoCard.classList.add('bg-white', 'rounded-lg', 'shadow-xl', 'p-4', 'flex', 'flex-col', 'items-center', 'space-y-2', 'cursor-pointer', 'transform', 'hover:scale-[1.03]', 'transition-all');
                     
+                    // ESTE É O COMANDO QUE ABRE O MODAL AO CLICAR NO CARD
                     photoCard.onclick = (e) => window.showModalFromCard(e);
 
                     const previewImage = projeto.images && projeto.images.length > 0 ? projeto.images[0].url : 'https://placehold.co/600x400/0095f6/ffffff?text=Sem+Imagem';
-                    const valorFormatado = (projeto.valorProjeto || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                     const rating = projeto.ratingCount > 0 ? projeto.totalRating / projeto.ratingCount : 0;
                     const displayStars = generateDisplayStars(rating);
 
@@ -110,8 +110,7 @@
                         <p class="font-bold text-lg text-gray-800 text-center">${projeto.tipoProjeto || 'Tipo Indefinido'}</p>
                         <p class="text-sm text-gray-600 text-center">${projeto.listaComodos ? projeto.listaComodos.length : 0} Cômodo(s)</p>
                         <div class="flex items-center space-x-1">${displayStars}</div>
-                        <p class="text-sm text-indigo-600">${valorFormatado}</p>
-                    `;
+                        `;
                     container.appendChild(photoCard);
                 });
             }
@@ -123,7 +122,7 @@
         const setupFilteredGalleryListener = () => {
             const projectsCollectionRef = collection(db, `artifacts/${firebaseConfig.projectId}/public/data/galleries`);
             
-            // CORREÇÃO APLICADA: Incluindo os valores compostos de 'tipoProjeto'
+            // Filtro corrigido
             const q = query(
                 projectsCollectionRef, 
                 where('tipoProjeto', 'in', [
@@ -143,7 +142,7 @@
             });
         };
 
-        // --- FUNÇÕES MODAL E CAROUSEL (Mantidas) ---
+        // --- FUNÇÕES MODAL E CAROUSEL ---
 
         window.showModal = (projeto) => { 
             const modal = document.getElementById('modal');
@@ -151,6 +150,7 @@
             const projectDetailsMobile = document.getElementById('project-details-mobile');
             const projectTitle = document.getElementById('project-title');
             
+            // PREPARAÇÃO DO CARROSSEL DE IMAGENS
             currentCarouselPhotos = projeto.images || [];
             currentImageIndex = 0;
             window.showCarousel();
@@ -159,7 +159,6 @@
 
             const rating = projeto.ratingCount > 0 ? projeto.totalRating / projeto.ratingCount : 0;
             const displayStars = generateDisplayStars(rating);
-            const valorFormatado = (projeto.valorProjeto || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             const comodosList = formatComodosList(projeto.listaComodos);
 
             const detailsHTML = `
@@ -167,7 +166,6 @@
                     <h3 class="text-xl font-bold text-gray-100">${projeto.nomeProjeto || 'Projeto Sem Nome'}</h3>
                     <p class="text-indigo-400">${projeto.tipoProjeto || 'Tipo Indefinido'} - ${projeto.tipoImovel || 'Imóvel Indefinido'}</p>
                     <div class="flex items-center space-x-1">${displayStars}</div>
-                    <p class="text-lg text-white">Valor: ${valorFormatado}</p>
                     <p class="text-gray-300">Descrição: ${projeto.descricao || 'Nenhuma descrição fornecida.'}</p>
                     <p class="text-gray-300">Cômodos: ${comodosList}</p>
                     <div class="pt-4 border-t border-gray-700 space-y-3">
@@ -209,6 +207,7 @@
             document.getElementById('modal').classList.add('hidden');
         };
         
+        // Função que atualiza a imagem do carrossel
         window.showCarousel = () => { 
             const imgElement = document.getElementById('main-carousel-image');
             if (currentCarouselPhotos.length > 0) {
@@ -233,7 +232,7 @@
             }
         };
         
-        // Função para buscar o projeto ao clicar no card
+        // Função que busca o projeto no Firestore e chama o showModal
         window.showModalFromCard = async (event) => {
             let cardElement = event.target.closest('[data-project-id]');
             if (!cardElement) return;
